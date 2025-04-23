@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Random Word Game</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f5f5f7;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        button:active {
+            background-color: #005bb5;
+        }
+        .word-display {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 40px;
+            display: none;
+        }
+        .player-indicator {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #0071e3;
+        }
+        .next-player-btn {
+            background-color: #34c759;
+        }
+        .reset-btn {
+            background-color: #ff3b30;
+        }
+        .instruction {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .game-section {
+            display: none;
+        }
+        .word-categories {
+            margin-bottom: 20px;
+        }
+        .status {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Random Word Game</h1>
+    
+    <div class="container" id="setup-section">
+        <label for="player-count">Number of Players:</label>
+        <input type="number" id="player-count" min="3" value="4" max="20">
+        
+        <div class="word-categories">
+            <label for="word-category">Choose a Word Category:</label>
+            <select id="word-category">
+                <option value="animals">Animals</option>
+                <option value="professions">Professions</option>
+                <option value="objects">Household Objects</option>
+                <option value="places">Places</option>
+                <option value="foods">Foods</option>
+                <option value="custom" id="custom-option">Custom Words (add below)</option>
+                <option value="file" id="file-option">Load Words from Text File</option>
+            </select>
+            
+            <div id="custom-words-section" style="display: none;">
+                <label for="custom-words">Enter custom words (separated by commas):</label>
+                <input type="text" id="custom-words" placeholder="cat, dog, elephant, tiger, lion">
+            </div>
+            
+            <div id="file-upload-section" style="display: none;">
+                <label for="word-file">Upload a text file with words (one word per line):</label>
+                <input type="file" id="word-file" accept=".txt">
+                <p class="status" id="file-status"></p>
+            </div>
+        </div>
+        
+        <button id="start-game">Start Game</button>
+        <p class="instruction">The game will randomly select one player to be the imposter.</p>
+    </div>
+    
+    <div class="container game-section" id="game-section">
+        <div class="player-indicator">Player <span id="current-player">1</span>'s Turn</div>
+        <button id="show-word">Show My Word</button>
+        <div class="word-display" id="word-display"></div>
+        <p class="instruction" id="tap-instruction">Tap to see your word. Don't show others!</p>
+        <p class="status" id="game-status"></p>
+        <button id="next-player" class="next-player-btn">Next Player</button>
+        <button id="reset-game" class="reset-btn">Reset Game</button>
+    </div>
+    
+    <script>
+        // Word categories
+        const wordLists = {
+            animals: ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Zebra", "Monkey", "Penguin", "Kangaroo", "Bear", "Wolf", "Fox", "Rabbit", "Deer", "Horse", "Cow", "Sheep", "Pig", "Goat"],
+            professions: ["Doctor", "Teacher", "Engineer", "Chef", "Pilot", "Firefighter", "Police Officer", "Lawyer", "Nurse", "Scientist", "Architect", "Writer", "Artist", "Musician", "Actor", "Dentist", "Accountant", "Electrician", "Plumber", "Programmer"],
+            objects: ["Chair", "Table", "Lamp", "Couch", "Television", "Refrigerator", "Microwave", "Bed", "Bookshelf", "Mirror", "Clock", "Vase", "Pillow", "Blanket", "Phone", "Computer", "Keyboard", "Picture Frame", "Coffee Maker", "Toaster"],
+            places: ["Beach", "Mountain", "Forest", "Desert", "City", "Village", "Lake", "River", "Island", "Park", "Museum", "Hospital", "School", "Restaurant", "Airport", "Stadium", "Shopping Mall", "Library", "Hotel", "Zoo"],
+            foods: ["Pizza", "Burger", "Sushi", "Pasta", "Salad", "Ice Cream", "Cake", "Cookie", "Bread", "Cheese", "Apple", "Banana", "Orange", "Strawberry", "Chocolate", "Steak", "Chicken", "Rice", "Potato", "Carrot"]
+        };
+        
+        // DOM elements
+        const setupSection = document.getElementById("setup-section");
+        const gameSection = document.getElementById("game-section");
+        const playerCountInput = document.getElementById("player-count");
+        const wordCategorySelect = document.getElementById("word-category");
+        const customWordsSection = document.getElementById("custom-words-section");
+        const customWordsInput = document.getElementById("custom-words");
+        const startGameBtn = document.getElementById("start-game");
+        const showWordBtn = document.getElementById("show-word");
+        const wordDisplay = document.getElementById("word-display");
+        const currentPlayerSpan = document.getElementById("current-player");
+        const nextPlayerBtn = document.getElementById("next-player");
+        const resetGameBtn = document.getElementById("reset-game");
+        const tapInstruction = document.getElementById("tap-instruction");
+        const gameStatus = document.getElementById("game-status");
+        
+        // Game state
+        let playerCount = 4;
+        let currentPlayer = 1;
+        let words = [];
+        let imposterIndex = -1;
+        let regularWord = "";
+        let imposterWord = "";
+        let gameInProgress = false;
+        
+        // DOM elements for file upload
+        const fileUploadSection = document.getElementById("file-upload-section");
+        const wordFileInput = document.getElementById("word-file");
+        const fileStatus = document.getElementById("file-status");
+        
+        // Variable to store words from file
+        let wordsFromFile = [];
+        
+        // Event listeners
+        wordCategorySelect.addEventListener("change", function() {
+            customWordsSection.style.display = "none";
+            fileUploadSection.style.display = "none";
+            
+            if (this.value === "custom") {
+                customWordsSection.style.display = "block";
+            } else if (this.value === "file") {
+                fileUploadSection.style.display = "block";
+            }
+        });
+        
+        // File upload event listener
+        wordFileInput.addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const contents = e.target.result;
+                // Split by new lines and filter empty strings
+                wordsFromFile = contents.split(/\r?\n/).filter(word => word.trim() !== "");
+                
+                if (wordsFromFile.length < 3) {
+                    fileStatus.textContent = "Error: File must contain at least 3 words";
+                    wordsFromFile = [];
+                } else {
+                    fileStatus.textContent = `Successfully loaded ${wordsFromFile.length} words`;
+                }
+            };
+            
+            reader.onerror = function() {
+                fileStatus.textContent = "Error reading file";
+                wordsFromFile = [];
+            };
+            
+            reader.readAsText(file);
+        });
+        
+        startGameBtn.addEventListener("click", startGame);
+        showWordBtn.addEventListener("click", showWord);
+        nextPlayerBtn.addEventListener("click", nextPlayer);
+        resetGameBtn.addEventListener("click", resetGame);
+        
+        // Game functions
+        function startGame() {
+            playerCount = parseInt(playerCountInput.value);
+            
+            if (playerCount < 3) {
+                alert("You need at least 3 players to play!");
+                return;
+            }
+            
+            // Get words based on selected category
+            let category = wordCategorySelect.value;
+            let wordPool = [];
+            
+            if (category === "custom") {
+                const customWords = customWordsInput.value.split(",").map(word => word.trim());
+                if (customWords.length < 3) {
+                    alert("Please enter at least 3 custom words!");
+                    return;
+                }
+                wordPool = customWords;
+            } else if (category === "file") {
+                if (wordsFromFile.length < 3) {
+                    alert("Please upload a text file with at least 3 words!");
+                    return;
+                }
+                wordPool = wordsFromFile;
+            } else {
+                wordPool = wordLists[category];
+            }
+            
+            // Select random words
+            const randomIndex = Math.floor(Math.random() * wordPool.length);
+            regularWord = wordPool[randomIndex];
+            
+            // Set "IMPOSTER" as the word for the imposter
+            imposterWord = "IMPOSTER";
+            
+            // Randomly select the imposter
+            imposterIndex = Math.floor(Math.random() * playerCount) + 1;
+            
+            // Reset to first player
+            currentPlayer = 1;
+            currentPlayerSpan.textContent = currentPlayer;
+            
+            // Hide setup, show game
+            setupSection.style.display = "none";
+            gameSection.style.display = "block";
+            
+            // Reset word display
+            wordDisplay.style.display = "none";
+            showWordBtn.style.display = "block";
+            tapInstruction.style.display = "block";
+            
+            gameInProgress = true;
+            gameStatus.textContent = `Game started with ${playerCount} players. One is the imposter!`;
+            
+            nextPlayerBtn.disabled = true;
+        }
+        
+        function showWord() {
+            const word = currentPlayer === imposterIndex ? imposterWord : regularWord;
+            wordDisplay.textContent = word;
+            wordDisplay.style.display = "block";
+            showWordBtn.style.display = "none";
+            tapInstruction.style.display = "none";
+            
+            nextPlayerBtn.disabled = false;
+        }
+        
+        function nextPlayer() {
+            currentPlayer++;
+            
+            if (currentPlayer > playerCount) {
+                // All players have seen their words
+                gameStatus.textContent = "Everyone has seen their word. Begin discussion!";
+                nextPlayerBtn.disabled = true;
+                return;
+            }
+            
+            currentPlayerSpan.textContent = currentPlayer;
+            wordDisplay.style.display = "none";
+            showWordBtn.style.display = "block";
+            tapInstruction.style.display = "block";
+            
+            nextPlayerBtn.disabled = true;
+        }
+        
+        function resetGame() {
+            setupSection.style.display = "block";
+            gameSection.style.display = "none";
+            gameInProgress = false;
+        }
+    </script>
+</body>
+</html>
