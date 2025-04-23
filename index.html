@@ -302,9 +302,9 @@
             } else {
                 imposterIndexs.push(Math.floor(Math.random() * playerCount) + 1);
             }
+            // console.log("Imposter Players: ", imposterIndexs);
             // Reset to first player
             currentPlayer = 1;
-            imposterIndexs = [];
             currentPlayerSpan.textContent = currentPlayer;
             
             // Hide setup, show game
@@ -355,6 +355,7 @@
             setupSection.style.display = "block";
             gameSection.style.display = "none";
             nextPlayerBtn.style.display = 'block';
+            imposterIndexs = [];
             gameInProgress = false;
         }
     </script>
