@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Random Word Game</title>
+    <title>Imposter!</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -96,7 +96,7 @@
     </style>
 </head>
 <body>
-    <h1>Random Word Game</h1>
+    <h1>Imposter</h1>
     
     <div class="container" id="setup-section">
         <label for="player-count">Number of Players:</label>
@@ -110,6 +110,7 @@
                 <option value="objects">Household Objects</option>
                 <option value="places">Places</option>
                 <option value="foods">Foods</option>
+                <option value="sports">Sports</option>
                 <option value="custom" id="custom-option">Custom Words (add below)</option>
                 <option value="file" id="file-option">Load Words from Text File</option>
             </select>
@@ -143,11 +144,12 @@
     <script>
         // Word categories
         const wordLists = {
-            animals: ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Zebra", "Monkey", "Penguin", "Kangaroo", "Bear", "Wolf", "Fox", "Rabbit", "Deer", "Horse", "Cow", "Sheep", "Pig", "Goat"],
-            professions: ["Doctor", "Teacher", "Engineer", "Chef", "Pilot", "Firefighter", "Police Officer", "Lawyer", "Nurse", "Scientist", "Architect", "Writer", "Artist", "Musician", "Actor", "Dentist", "Accountant", "Electrician", "Plumber", "Programmer"],
-            objects: ["Chair", "Table", "Lamp", "Couch", "Television", "Refrigerator", "Microwave", "Bed", "Bookshelf", "Mirror", "Clock", "Vase", "Pillow", "Blanket", "Phone", "Computer", "Keyboard", "Picture Frame", "Coffee Maker", "Toaster"],
-            places: ["Beach", "Mountain", "Forest", "Desert", "City", "Village", "Lake", "River", "Island", "Park", "Museum", "Hospital", "School", "Restaurant", "Airport", "Stadium", "Shopping Mall", "Library", "Hotel", "Zoo"],
-            foods: ["Pizza", "Burger", "Sushi", "Pasta", "Salad", "Ice Cream", "Cake", "Cookie", "Bread", "Cheese", "Apple", "Banana", "Orange", "Strawberry", "Chocolate", "Steak", "Chicken", "Rice", "Potato", "Carrot"]
+            animals: ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Zebra", "Bear", "Kangaroo", "Panda", "Dolphin", "Shark", "Whale", "Horse", "Monkey", "Fox", "Wolf", "Rabbit", "Deer", "Frog", "Turtle", "Crocodile", "Alligator", "Penguin", "Ostrich", "Koala", "Camel", "Leopard", "Jaguar", "Hippo", "Lemur", "Meerkat", "Chameleon", "Peacock", "Parrot", "Swan", "Eagle", "Hawk", "Falcon", "Owl", "Bat", "Otter", "Beaver", "Moose", "Bison", "Raccoon", "Squirrel", "Skunk", "Porcupine", "Antelope", "Donkey", "Goat", "Sheep", "Cow", "Pig", "Chicken", "Rooster", "Duck", "Goose", "Turkey", "Crab", "Lobster", "Octopus", "Squid", "Starfish", "Jellyfish", "Snail", "Slug", "Worm", "Spider", "Bee", "Wasp", "Butterfly", "Moth", "Ant", "Grasshopper", "Ladybug", "Dragonfly", "Firefly", "Scorpion", "Iguana", "Toad", "Salamander", "Newt", "Hedgehog", "Hamster", "Gerbil", "Guinea Pig", "Mole", "Shrew", "Reindeer", "Seal", "Walrus", "Manatee", "Armadillo", "Tapir", "Gazelle", "Hyena", "Emu", "Llama"],
+            professions: ["Doctor", "Teacher", "Engineer", "Lawyer", "Chef", "Artist", "Musician", "Police Officer", "Firefighter", "Nurse", "Architect", "Scientist", "Pilot", "Journalist", "Farmer", "Electrician", "Plumber", "Dentist", "Programmer", "Actor", "Actress", "Designer", "Photographer", "Librarian", "Accountant", "Mechanic", "Pharmacist", "Veterinarian", "Barber", "Hairdresser", "Cashier", "Receptionist", "Waiter", "Waitress", "Cook", "Baker", "Butcher", "Tailor", "Construction Worker", "Carpenter", "Janitor", "Cleaner", "Security Guard", "Paramedic", "Translator", "Interpreter", "Economist", "Biologist", "Chemist", "Physicist", "Geologist", "Astronomer", "Mathematician", "Statistician", "Psychologist", "Therapist", "Social Worker", "Counselor", "Real Estate Agent", "Travel Agent", "Flight Attendant", "Air Traffic Controller", "Bus Driver", "Truck Driver", "Taxi Driver", "Delivery Driver", "Athlete", "Coach", "Referee", "Umpire", "Fitness Trainer", "Bodybuilder", "Politician", "Diplomat", "Judge", "Prosecutor", "Clerk", "IT Specialist", "Data Analyst", "UX Designer", "Game Developer", "Animator", "Model", "Voice Actor", "YouTuber", "Streamer", "Influencer", "Blogger", "Editor", "Producer", "Director", "Sound Engineer", "Makeup Artist", "Tattoo Artist", "Decorator", "Event Planner", "Surveyor", "Zookeeper", "Marine Biologist"],
+            objects: ["Chair", "Table", "Phone", "Laptop", "Book", "Pen", "Backpack", "Glasses", "Wallet", "Watch", "Bottle", "Cup", "Mug", "Spoon", "Fork", "Knife", "Plate", "Bowl", "Mirror", "Comb", "Brush", "Toothbrush", "Toothpaste", "Towel", "Soap", "Shampoo", "Conditioner", "Remote", "TV", "Speaker", "Headphones", "Mouse", "Keyboard", "Monitor", "Lamp", "Lightbulb", "Fan", "Heater", "Blanket", "Pillow", "Mattress", "Desk", "Cabinet", "Drawer", "Closet", "Curtain", "Rug", "Door", "Window", "Clock", "Calendar", "Camera", "Tripod", "Mic", "Charger", "Cable", "Battery", "Fridge", "Oven", "Stove", "Microwave", "Blender", "Toaster", "Pan", "Pot", "Kettle", "Grater", "Scissors", "Tape", "Glue", "Paper", "Notebook", "Folder", "Envelope", "Stamp", "Marker", "Crayon", "Paintbrush", "Canvas", "Screwdriver", "Hammer", "Wrench", "Drill", "Saw", "Nail", "Screw", "Ladder", "Toolbox", "Helmet", "Bag", "Suitcase", "Umbrella", "Ball", "Bicycle", "Skateboard", "Game Console", "Joystick", "Board Game", "Card", "Puzzle"],
+            places: ["Paris", "New York", "Tokyo", "London", "Cairo", "Sydney", "Rome", "Beijing", "Moscow", "Toronto", "Rio de Janeiro", "Bangkok", "Dubai", "Berlin", "Chicago", "Barcelona", "Mumbai", "Seoul", "Istanbul", "Cape Town", "Los Angeles", "San Francisco", "Miami", "Singapore", "Madrid", "Dublin", "Prague", "Lisbon", "Warsaw", "Budapest", "Vienna", "Brussels", "Oslo", "Stockholm", "Helsinki", "Copenhagen", "Zurich", "Geneva", "Athens", "Jerusalem", "Doha", "Abu Dhabi", "Kuala Lumpur", "Jakarta", "Manila", "Hanoi", "Ho Chi Minh City", "Lima", "Bogotá", "Caracas", "Buenos Aires", "Santiago", "Montevideo", "Quito", "Panama City", "San José", "Mexico City", "Havana", "Kingston", "Nairobi", "Accra", "Lagos", "Addis Ababa", "Dar es Salaam", "Kigali", "Casablanca", "Marrakesh", "Tunis", "Algiers", "Reykjavik", "Anchorage", "Honolulu", "Las Vegas", "Orlando", "Philadelphia", "Boston", "Detroit", "Phoenix", "San Diego", "Seattle", "Portland", "Denver", "Minneapolis", "Atlanta", "Houston", "Dallas", "Austin", "New Orleans", "Pittsburgh", "Baltimore", "St. Louis", "Salt Lake City", "Charlotte", "Cleveland", "Indianapolis"],
+            foods: ["Pizza", "Burger", "Hot Dog", "Fries", "Pasta", "Spaghetti", "Lasagna", "Mac and Cheese", "Rice", "Noodles", "Sushi", "Ramen", "Tacos", "Burrito", "Quesadilla", "Nachos", "Salad", "Steak", "Chicken", "Beef", "Pork", "Lamb", "Fish", "Shrimp", "Crab", "Lobster", "Clams", "Oysters", "Bread", "Bagel", "Toast", "Croissant", "Muffin", "Pancake", "Waffle", "Donut", "Cookie", "Brownie", "Cake", "Pie", "Ice Cream", "Yogurt", "Cheese", "Milk", "Butter", "Eggs", "Apple", "Banana", "Orange", "Grapes", "Strawberry", "Blueberry", "Raspberry", "Mango", "Pineapple", "Peach", "Cherry", "Watermelon", "Cantaloupe", "Lettuce", "Tomato", "Cucumber", "Carrot", "Potato", "Sweet Potato", "Broccoli", "Cauliflower", "Spinach", "Kale", "Peas", "Corn", "Beans", "Lentils", "Chickpeas", "Tofu", "Soy", "Tempeh", "Curry", "Chili", "Soup", "Stew", "Sausage", "Meatball", "Dumpling", "Spring Roll", "Egg Roll", "Kimchi", "Sauerkraut", "Pickles", "Olives", "Nuts", "Almonds", "Walnuts", "Peanuts", "Cashews", "Popcorn", "Chips", "Crackers"],
+            sports: ["Soccer", "Basketball", "Baseball", "Tennis", "Volleyball", "Golf", "Cricket", "Hockey", "Rugby", "American Football", "Table Tennis", "Badminton", "Boxing", "Wrestling", "MMA", "Swimming", "Track and Field", "Cycling", "Skiing", "Snowboarding", "Surfing", "Skateboarding", "Fencing", "Lacrosse", "Rowing", "Archery", "Equestrian", "Handball", "Diving", "Judo", "Karate", "Taekwondo", "Weightlifting", "Climbing"]
         };
         
         // DOM elements
@@ -301,24 +303,27 @@
         function nextPlayer() {
             currentPlayer++;
             
-            if (currentPlayer > playerCount) {
-                // All players have seen their words
-                gameStatus.textContent = "Everyone has seen their word. Begin discussion!";
-                nextPlayerBtn.disabled = true;
-                return;
-            }
-            
             currentPlayerSpan.textContent = currentPlayer;
             wordDisplay.style.display = "none";
             showWordBtn.style.display = "block";
             tapInstruction.style.display = "block";
             
             nextPlayerBtn.disabled = true;
+
+            if (currentPlayer >= playerCount) {
+                // All players have seen their words
+                gameStatus.textContent = "Everyone has seen their word. Begin discussion!";
+                nextPlayerBtn.disabled = true;
+                nextPlayerBtn.style.display = 'none';
+                return;
+            } else {nextPlayerBtn.style.display = 'block';}
         }
         
         function resetGame() {
             setupSection.style.display = "block";
             gameSection.style.display = "none";
+            console.log('reset next player button')
+            nextPlayerBtn.style.display = 'block';
             gameInProgress = false;
         }
     </script>
