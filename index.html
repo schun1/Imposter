@@ -101,6 +101,8 @@
     <div class="container" id="setup-section">
         <label for="player-count">Number of Players:</label>
         <input type="number" id="player-count" min="3" value="4" max="20">
+        <label for="imposter-count">Number of Imposters:</label>
+        <input type="number" id="imposter-count" min="1" value="1" max="18">
         
         <div class="word-categories">
             <label for="word-category">Choose a Word Category:</label>
@@ -163,6 +165,7 @@
         const setupSection = document.getElementById("setup-section");
         const gameSection = document.getElementById("game-section");
         const playerCountInput = document.getElementById("player-count");
+        const imposterCountInput = document.getElementById("imposter-count");
         const wordCategorySelect = document.getElementById("word-category");
         const customWordsSection = document.getElementById("custom-words-section");
         const customWordsInput = document.getElementById("custom-words");
@@ -177,12 +180,14 @@
         
         // Game state
         let playerCount = 4;
+        let imposterCount = 1;
         let currentPlayer = 1;
         let words = [];
         let imposterIndex = -1;
         let regularWord = "";
         let imposterWord = "";
         let gameInProgress = false;
+        let imposterIndexs = []
         
         // DOM elements for file upload
         const fileUploadSection = document.getElementById("file-upload-section");
@@ -241,9 +246,20 @@
         // Game functions
         function startGame() {
             playerCount = parseInt(playerCountInput.value);
+            imposterCount = parseInt(imposterCountInput.value);
             
             if (playerCount < 3) {
                 alert("You need at least 3 players to play!");
+                return;
+            }
+            if (playerCount < 5 && imposterCount > 1) {
+                alert("You need at least 6 players to have multiple imposters!");
+                return;
+            } else if (imposterCount > playerCount) {
+                alert("You can't have more imposters than players!");
+                return;
+            } else if (imposterCount + Math.ceil(playerCount/2) > playerCount) {
+                alert("You must have majority of players over imposters!");
                 return;
             }
             
@@ -275,9 +291,17 @@
             // Set "IMPOSTER" as the word for the imposter
             imposterWord = "IMPOSTER";
             
-            // Randomly select the imposter
-            imposterIndex = Math.floor(Math.random() * playerCount) + 1;
-            
+            if (imposterCount > 1) {
+                while (imposterIndexs.length < imposterCount) {
+                    let rand = Math.floor(Math.random() * playerCount) + 1; 
+
+                    if (!imposterIndexs.includes(rand)) {
+                        imposterIndexs.push(rand);
+                    }
+                }
+            } else {
+                imposterIndexs.push(Math.floor(Math.random() * playerCount) + 1);
+            }
             // Reset to first player
             currentPlayer = 1;
             currentPlayerSpan.textContent = currentPlayer;
@@ -298,7 +322,7 @@
         }
         
         function showWord() {
-            const word = currentPlayer === imposterIndex ? imposterWord : regularWord;
+            const word = imposterIndexs.includes(currentPlayer) ? imposterWord : regularWord;
             wordDisplay.textContent = word;
             wordDisplay.style.display = "block";
             showWordBtn.style.display = "none";
@@ -329,7 +353,6 @@
         function resetGame() {
             setupSection.style.display = "block";
             gameSection.style.display = "none";
-            console.log('reset next player button')
             nextPlayerBtn.style.display = 'block';
             gameInProgress = false;
         }
