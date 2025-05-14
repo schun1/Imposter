@@ -299,7 +299,11 @@
             regularWord = wordPool[randomIndex];
             
             // Set "IMPOSTER" as the word for the imposter
-            imposterWord = "IMPOSTER";
+            while (imposterWord != regularWord) {
+                let rand1 = Mat.floor(Math.random() * wordPool.length);
+                imposterWord = wordPool[rand1];
+            }
+            // imposterWord = "IMPOSTER";
             
             if (imposterCount > 1) {
                 while (imposterIndexs.length < imposterCount) {
