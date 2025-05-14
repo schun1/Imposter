@@ -103,6 +103,30 @@
             .word-categories {
                 margin-bottom: 20px;
             }
+            .answers-section {
+                display: none;
+                margin-top: 20px;
+            }
+            .player-answer {
+                margin-bottom: 15px;
+                padding: 10px;
+                background-color: #2a2a40;
+                border-radius: 8px;
+            }
+            .player-answer-input {
+                display: none;
+                margin-top: 15px;
+            }
+            .answers-container {
+                margin-top: 20px;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            .show-answers-btn {
+                background-color: #b54aff;
+                box-shadow: 0 0 10px #b54aff;
+                margin-top: 15px;
+            }
         </style>
     </head>
 <body>
@@ -144,8 +168,8 @@
         <button id="start-game">Start Game</button>
         <h6 class="instruction">Instructions</h6>
         <p class="instruction">The game will randomly select player(s) to be the imposter.</p>
-        <p class='instruction'>Players will take turns to say a word that describes the category word. The players will attempt to figure out who the imposter is. The Imposter will attempt to blend in while trying to figure out the category word. Once players are ready, they will take a vote on who they think the imposter is. </p>
-        <p class='instruction'>Be careful though! If the wrong person is voted out, the imposter wins! The imposter can also win if they figure out the word first, they can shout it out and win! </p>
+        <p class='instruction'>Players will take turns to see their word. After seeing their word, each player will enter a related word without giving away the actual word. The players will attempt to figure out who the imposter is. The Imposter will attempt to blend in while trying to figure out the category word.</p>
+        <p class='instruction'>Be careful though! If the wrong person is voted out, the imposter wins! The imposter can also win if they figure out the word first, they can shout it out and win!</p>
     </div>
     
     <div class="container game-section" id="game-section">
@@ -153,27 +177,290 @@
         <button id="show-word">Show My Word</button>
         <div class="word-display" id="word-display"></div>
         <p class="instruction" id="tap-instruction">Tap to see your word. Don't show others!</p>
+        
+        <div class="player-answer-input" id="player-answer-input">
+            <label for="answer-input">Enter a related word/clue (don't be too obvious):</label>
+            <input type="text" id="answer-input" placeholder="Enter your clue here">
+            <button id="submit-answer" class="next-player-btn">Submit Answer</button>
+        </div>
+        
         <p class="status" id="game-status"></p>
-        <button id="next-player" class="next-player-btn">Next Player</button>
         <button id="reset-game" class="reset-btn">Reset Game</button>
+    </div>
+    
+    <div class="container answers-section" id="answers-section">
+        <h2 style="text-align: center;">All Player Answers</h2>
+        <div class="answers-container" id="answers-container">
+            <!-- Player answers will go here -->
+        </div>
+        <button id="back-to-game" class="next-player-btn">Back to Game</button>
     </div>
     
     <script>
         // Word categories
         const wordLists = {
-            animals: ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Zebra", "Bear", "Kangaroo", "Panda", "Dolphin", "Shark", "Whale", "Horse", "Monkey", "Fox", "Wolf", "Rabbit", "Deer", "Frog", "Turtle", "Crocodile", "Alligator", "Penguin", "Ostrich", "Koala", "Camel", "Leopard", "Jaguar", "Hippo", "Lemur", "Meerkat", "Chameleon", "Peacock", "Parrot", "Swan", "Eagle", "Hawk", "Falcon", "Owl", "Bat", "Otter", "Beaver", "Moose", "Bison", "Raccoon", "Squirrel", "Skunk", "Porcupine", "Antelope", "Donkey", "Goat", "Sheep", "Cow", "Pig", "Chicken", "Rooster", "Duck", "Goose", "Turkey", "Crab", "Lobster", "Octopus", "Squid", "Starfish", "Jellyfish", "Snail", "Slug", "Worm", "Spider", "Bee", "Wasp", "Butterfly", "Moth", "Ant", "Grasshopper", "Ladybug", "Dragonfly", "Firefly", "Scorpion", "Iguana", "Toad", "Salamander", "Newt", "Hedgehog", "Hamster", "Gerbil", "Guinea Pig", "Mole", "Shrew", "Reindeer", "Seal", "Walrus", "Manatee", "Armadillo", "Tapir", "Gazelle", "Hyena", "Emu", "Llama"],
-            professions: ["Doctor", "Teacher", "Engineer", "Lawyer", "Chef", "Artist", "Musician", "Police Officer", "Firefighter", "Nurse", "Architect", "Scientist", "Pilot", "Journalist", "Farmer", "Electrician", "Plumber", "Dentist", "Programmer", "Actor", "Actress", "Designer", "Photographer", "Librarian", "Accountant", "Mechanic", "Pharmacist", "Veterinarian", "Barber", "Hairdresser", "Cashier", "Receptionist", "Waiter", "Waitress", "Cook", "Baker", "Butcher", "Tailor", "Construction Worker", "Carpenter", "Janitor", "Cleaner", "Security Guard", "Paramedic", "Translator", "Interpreter", "Economist", "Biologist", "Chemist", "Physicist", "Geologist", "Astronomer", "Mathematician", "Statistician", "Psychologist", "Therapist", "Social Worker", "Counselor", "Real Estate Agent", "Travel Agent", "Flight Attendant", "Air Traffic Controller", "Bus Driver", "Truck Driver", "Taxi Driver", "Delivery Driver", "Athlete", "Coach", "Referee", "Umpire", "Fitness Trainer", "Bodybuilder", "Politician", "Diplomat", "Judge", "Prosecutor", "Clerk", "IT Specialist", "Data Analyst", "UX Designer", "Game Developer", "Animator", "Model", "Voice Actor", "YouTuber", "Streamer", "Influencer", "Blogger", "Editor", "Producer", "Director", "Sound Engineer", "Makeup Artist", "Tattoo Artist", "Decorator", "Event Planner", "Surveyor", "Zookeeper", "Marine Biologist"],
-            objects: ["Chair", "Table", "Phone", "Laptop", "Book", "Pen", "Backpack", "Glasses", "Wallet", "Watch", "Bottle", "Cup", "Mug", "Spoon", "Fork", "Knife", "Plate", "Bowl", "Mirror", "Comb", "Brush", "Toothbrush", "Toothpaste", "Towel", "Soap", "Shampoo", "Conditioner", "Remote", "TV", "Speaker", "Headphones", "Mouse", "Keyboard", "Monitor", "Lamp", "Lightbulb", "Fan", "Heater", "Blanket", "Pillow", "Mattress", "Desk", "Cabinet", "Drawer", "Closet", "Curtain", "Rug", "Door", "Window", "Clock", "Calendar", "Camera", "Tripod", "Mic", "Charger", "Cable", "Battery", "Fridge", "Oven", "Stove", "Microwave", "Blender", "Toaster", "Pan", "Pot", "Kettle", "Grater", "Scissors", "Tape", "Glue", "Paper", "Notebook", "Folder", "Envelope", "Stamp", "Marker", "Crayon", "Paintbrush", "Canvas", "Screwdriver", "Hammer", "Wrench", "Drill", "Saw", "Nail", "Screw", "Ladder", "Toolbox", "Helmet", "Bag", "Suitcase", "Umbrella", "Ball", "Bicycle", "Skateboard", "Game Console", "Joystick", "Board Game", "Card", "Puzzle"],
-            places: ["Paris", "New York", "Tokyo", "London", "Cairo", "Sydney", "Rome", "Beijing", "Moscow", "Toronto", "Rio de Janeiro", "Bangkok", "Dubai", "Berlin", "Chicago", "Barcelona", "Mumbai", "Seoul", "Istanbul", "Cape Town", "Los Angeles", "San Francisco", "Miami", "Singapore", "Madrid", "Dublin", "Prague", "Lisbon", "Warsaw", "Budapest", "Vienna", "Brussels", "Oslo", "Stockholm", "Helsinki", "Copenhagen", "Zurich", "Geneva", "Athens", "Jerusalem", "Doha", "Abu Dhabi", "Kuala Lumpur", "Jakarta", "Manila", "Hanoi", "Ho Chi Minh City", "Lima", "Bogotá", "Caracas", "Buenos Aires", "Santiago", "Montevideo", "Quito", "Panama City", "San José", "Mexico City", "Havana", "Kingston", "Nairobi", "Accra", "Lagos", "Addis Ababa", "Dar es Salaam", "Kigali", "Casablanca", "Marrakesh", "Tunis", "Algiers", "Reykjavik", "Anchorage", "Honolulu", "Las Vegas", "Orlando", "Philadelphia", "Boston", "Detroit", "Phoenix", "San Diego", "Seattle", "Portland", "Denver", "Minneapolis", "Atlanta", "Houston", "Dallas", "Austin", "New Orleans", "Pittsburgh", "Baltimore", "St. Louis", "Salt Lake City", "Charlotte", "Cleveland", "Indianapolis"],
-            foods: ["Pizza", "Burger", "Hot Dog", "Fries", "Pasta", "Spaghetti", "Lasagna", "Mac and Cheese", "Rice", "Noodles", "Sushi", "Ramen", "Tacos", "Burrito", "Quesadilla", "Nachos", "Salad", "Steak", "Chicken", "Beef", "Pork", "Lamb", "Fish", "Shrimp", "Crab", "Lobster", "Clams", "Oysters", "Bread", "Bagel", "Toast", "Croissant", "Muffin", "Pancake", "Waffle", "Donut", "Cookie", "Brownie", "Cake", "Pie", "Ice Cream", "Yogurt", "Cheese", "Milk", "Butter", "Eggs", "Apple", "Banana", "Orange", "Grapes", "Strawberry", "Blueberry", "Raspberry", "Mango", "Pineapple", "Peach", "Cherry", "Watermelon", "Cantaloupe", "Lettuce", "Tomato", "Cucumber", "Carrot", "Potato", "Sweet Potato", "Broccoli", "Cauliflower", "Spinach", "Kale", "Peas", "Corn", "Beans", "Lentils", "Chickpeas", "Tofu", "Soy", "Tempeh", "Curry", "Chili", "Soup", "Stew", "Sausage", "Meatball", "Dumpling", "Spring Roll", "Egg Roll", "Kimchi", "Sauerkraut", "Pickles", "Olives", "Nuts", "Almonds", "Walnuts", "Peanuts", "Cashews", "Popcorn", "Chips", "Crackers"],
-            sports: ["Soccer", "Basketball", "Baseball", "American Football", "Tennis", "Volleyball", "Golf", "Cricket", "Hockey", "Table Tennis", "Badminton", "Boxing", "Wrestling", "MMA", "Swimming", "Track and Field", "Cycling", "Skiing", "Snowboarding", "Surfing", "Skateboarding", "Fencing", "Lacrosse", "Rowing", "Archery", "Equestrian", "Handball", "Diving", "Judo", "Karate", "Taekwondo", "Weightlifting", "Climbing", "Rugby", "Softball", "Field Hockey", "Figure Skating", "Speed Skating", "Ice Hockey", "Curling", "Bobsleigh", "Luge", "Skeleton", "Sailing", "Canoeing", "Kayaking", "Triathlon", "Pentathlon", "Gymnastics", "Rhythmic Gymnastics", "Trampoline", "BMX", "Mountain Biking", "Road Racing", "Motocross", "Auto Racing", "Drag Racing", "Nascar", "Formula 1", "Horse Racing", "Polo", "Bull Riding", "Rodeo", "Snooker", "Billiards", "Bowling", "Darts", "Ultimate Frisbee", "Disc Golf", "Kickboxing", "Capoeira", "Parkour", "Cheerleading", "Dance Sport", "Arm Wrestling", "Paintball", "Airsoft", "eSports", "Drone Racing", "Rock Climbing", "Speed Climbing", "Orienteering", "Powerlifting", "Strongman", "Bodybuilding", "Synchronized Swimming", "Water Polo", "Free Diving", "Spearfishing", "Fishing", "Hiking", "Camping", "Hunting", "Dog Agility", "RC Car Racing", "Kitesurfing", "Windsurfing", "Wakeboarding", "Jet Skiing", "Ice Climbing", "Slacklining", "Highlining"],
-            video_games: ["The Legend of Zelda", "Super Mario Bros", "Minecraft", "Fortnite", "Call of Duty", "Grand Theft Auto V", "Red Dead Redemption 2", "Elden Ring", "God of War", "The Witcher 3", "Cyberpunk 2077", "Halo", "Overwatch", "Apex Legends", "League of Legends", "Dota 2", "Valorant", "Counter-Strike", "Roblox", "Among Us", "Animal Crossing", "Pokemon Red", "Pokemon Go", "Tetris", "Pac-Man", "Donkey Kong", "Street Fighter", "Mortal Kombat", "Tekken", "Super Smash Bros", "Final Fantasy VII", "Final Fantasy XIV", "Persona 5", "Kingdom Hearts", "Fire Emblem", "Metroid", "Kirby", "Splatoon", "Bayonetta", "Hollow Knight", "Celeste", "Undertale", "Stardew Valley", "Hades", "Dead Cells", "Cuphead", "Bioshock", "Mass Effect", "Dragon Age", "Assassin’s Creed", "Far Cry", "Watch Dogs", "Skyrim", "Oblivion", "Fallout 4", "Fallout New Vegas", "DOOM", "Wolfenstein", "Resident Evil", "Silent Hill", "Dark Souls", "Demon’s Souls", "Bloodborne", "Sekiro", "NieR: Automata", "Genshin Impact", "Honkai: Star Rail", "Arknights", "Clash of Clans", "Clash Royale", "Candy Crush", "Subway Surfers", "Temple Run", "Jetpack Joyride", "Flappy Bird", "Angry Birds", "Geometry Dash", "Monument Valley", "Plague Inc.", "Terraria", "No Man's Sky", "The Sims", "SimCity", "RollerCoaster Tycoon", "Civilization VI", "Age of Empires", "Crusader Kings III", "XCOM 2", "FIFA 24", "NBA 2K24", "Madden NFL 24", "Rocket League", "Gran Turismo", "Forza Horizon", "Need for Speed", "Mario Kart", "F-Zero", "Pikmin", "Yoshi’s Island", "Animal Jam", "Runescape", "MapleStory", "World of Warcraft", "Diablo IV", "Path of Exile"],
-            celebrities: ["Taylor Swift", "Beyoncé", "Rihanna", "Drake", "Ariana Grande", "Lady Gaga", "Kanye West", "Billie Eilish", "Dua Lipa", "Harry Styles", "Justin Bieber", "Selena Gomez", "Miley Cyrus", "Katy Perry", "Ed Sheeran", "Bruno Mars", "The Weeknd", "Doja Cat", "Nicki Minaj", "Cardi B", "Shakira", "Jennifer Lopez", "Camila Cabello", "Olivia Rodrigo", "Lizzo", "Post Malone", "Travis Scott", "Bad Bunny", "J Balvin", "Karol G", "Snoop Dogg", "Eminem", "Kendrick Lamar", "J. Cole", "Zendaya", "Timothée Chalamet", "Florence Pugh", "Tom Holland", "Chris Evans", "Chris Hemsworth", "Scarlett Johansson", "Robert Downey Jr.", "Margot Robbie", "Ryan Reynolds", "Blake Lively", "Brad Pitt", "Angelina Jolie", "Leonardo DiCaprio", "Tom Cruise", "Keanu Reeves", "Natalie Portman", "Emma Stone", "Emma Watson", "Anne Hathaway", "Gal Gadot", "Jason Momoa", "Henry Cavill", "Ben Affleck", "Matt Damon", "Christian Bale", "Daniel Radcliffe", "Rupert Grint", "Millie Bobby Brown", "Finn Wolfhard", "Noah Schnapp", "David Harbour", "Winona Ryder", "Pedro Pascal", "Bella Ramsey", "Elizabeth Olsen", "Paul Rudd", "Chris Pratt", "John Krasinski", "Emily Blunt", "Daniel Kaluuya", "Jamie Foxx", "Denzel Washington", "Morgan Freeman", "Viola Davis", "Halle Berry", "Oprah Winfrey", "Steve Harvey", "Ellen DeGeneres", "Jimmy Fallon", "Stephen Colbert", "Trevor Noah", "Joe Rogan", "PewDiePie", "MrBeast", "Markiplier", "Jacksepticeye", "Charli D’Amelio", "Addison Rae", "Logan Paul", "Jake Paul", "Kim Kardashian", "Kylie Jenner", "Kendall Jenner", "Kourtney Kardashian", "Gigi Hadid", "Bella Hadid", "Zayn Malik", "Shawn Mendes"]
-        };
+  "animals": [
+    "What is your favorite animal?",
+    "What animal would you want as a pet if laws didn’t matter?",
+    "What animal best represents your personality?",
+    "What animal do you think you could defeat in a fight?",
+    "What animal would be the worst to be stuck in an elevator with?",
+    "What animal would make the best president?",
+    "What animal do you wish you could ride into battle?",
+    "What animal scares you the most?",
+    "What animal would you trade places with for a day?",
+    "What animal would win in a zoo-wide brawl?",
+    "What animal would you choose to become extinct?",
+    "What animal looks like it’s always judging you?",
+    "What animal would be your sidekick in an action movie?",
+    "What animal should have a TV show?",
+    "What animal would you reincarnate as?",
+    "What animal do you think is secretly evil?",
+    "What animal is most overrated?",
+    "What animal would make the best roommate?",
+    "What animal would win a cooking competition?",
+    "What animal would make the worst pet?",
+    "What animal would dominate a talent show?",
+    "What animal looks the most smug?",
+    "What animal would be the best stand-up comedian?",
+    "What animal should get a driver’s license?",
+    "What animal would you be in a past life?",
+    "What animal do you irrationally dislike?",
+    "What animal would make the best therapist?",
+    "What animal would you like to shapeshift into?",
+    "What animal would win in a rap battle?",
+    "What animal would make a good lawyer?"
+  ],
+  "people": [
+    "What’s a name you wish you had?",
+    "Who’s someone you’d trust with a secret?",
+    "Who’s most likely to become famous?",
+    "Who would win a game show?",
+    "Who’s most likely to survive a zombie apocalypse?",
+    "Who would you want as a dinner guest?",
+    "Who has the most chaotic energy?",
+    "Who would make a good president?",
+    "Who would you want on your dodgeball team?",
+    "Who would be a fun road trip partner?",
+    "Who’s the most intimidating person you know?",
+    "Who would get arrested first?",
+    "Who is most likely to cry during a movie?",
+    "Who would you vote off the island?",
+    "Who gives the worst advice?",
+    "Who do you admire the most?",
+    "Who would betray the group in a heist?",
+    "Who would win in a fist fight?",
+    "Who would you switch lives with?",
+    "Who would you never let babysit your kids?",
+    "Who always steals the spotlight?",
+    "Who would you trust to diffuse a bomb?",
+    "Who would be a terrible magician?",
+    "Who gives the best hugs?",
+    "Who has main character energy?",
+    "Who would get lost in their own neighborhood?",
+    "Who would you start a business with?",
+    "Who do you call in an emergency?",
+    "Who would write the best autobiography?",
+    "Who would narrate your life story?"
+  ],
+  "cities": [
+    "What city would you love to live in?",
+    "What city has the best food?",
+    "What city would you get lost in (in a good way)?",
+    "What city is most overrated?",
+    "What city would make a great movie setting?",
+    "What city do you never want to visit again?",
+    "What city would be the first to fall in an alien invasion?",
+    "What city do you associate with romance?",
+    "What city should everyone visit once?",
+    "What city would you want to retire in?",
+    "What city would you get stuck in during a zombie apocalypse?",
+    "What city do you think you’d be mayor of?",
+    "What city feels like home, even if you’ve never been?",
+    "What city would host the weirdest Olympics?",
+    "What city screams 'main character energy'?",
+    "What city is best at night?",
+    "What city would you start over in?",
+    "What city inspires you?",
+    "What city do you wish you knew more about?",
+    "What city would you choose for a 24-hour layover?",
+    "What city would you run away to?",
+    "What city has the most mysterious vibe?",
+    "What city would make the best video game map?",
+    "What city would make a great TV show?",
+    "What city do you think has the best fashion?",
+    "What city do you dream about?",
+    "What city do you associate with summer?",
+    "What city feels the most magical?",
+    "What city has the best energy?",
+    "What city would you get tattooed on your body?"
+  ],
+  "places": [
+    "What’s the best kind of restaurant?",
+    "Where would you go to cry in public?",
+    "Where’s your happy place?",
+    "What’s the most underrated hangout spot?",
+    "Where do you get your best ideas?",
+    "What’s the worst kind of bathroom?",
+    "Where would you hide in a game of hide and seek?",
+    "What place do you associate with childhood?",
+    "What’s the most chaotic place?",
+    "Where do you feel most at peace?",
+    "Where would you take someone on a first date?",
+    "Where’s the worst place to get stuck?",
+    "What’s your favorite place to waste time?",
+    "Where do you feel most powerful?",
+    "Where do you feel the smallest?",
+    "What place do you wish you could teleport to right now?",
+    "What place do you avoid at all costs?",
+    "What place gives you the creeps?",
+    "Where would you throw a secret party?",
+    "Where would you take an alien to experience Earth?",
+    "Where do you go to make important decisions?",
+    "Where do you feel the most inspired?",
+    "Where would you go to scream?",
+    "What’s the most awkward place to run into an ex?",
+    "Where do you have your most embarrassing memories?",
+    "What’s the weirdest place you’ve been?",
+    "Where would you film a horror movie?",
+    "Where would you hold a family reunion?",
+    "What’s the fanciest place you’ve ever been?",
+    "Where would you take your pet for a fun day?"
+  ],
+  "numbers": [
+    "How many times do you hit snooze in the morning?",
+    "How many exes do you have?",
+    "How many hours do you sleep per night?",
+    "How many tabs are open on your browser?",
+    "What’s your lucky number?",
+    "How many pets do you wish you had?",
+    "How many outfits do you try on before going out?",
+    "How many unread emails do you have right now?",
+    "How many countries do you want to visit?",
+    "How many times have you cried this month?",
+    "What’s your favorite number?",
+    "How many kids do you want?",
+    "How many cups of coffee is too many?",
+    "How many texts do you send in a day?",
+    "How many lies have you told today?",
+    "How many times do you check your phone per hour?",
+    "How many crushes do you currently have?",
+    "How many times have you rewatched your favorite show?",
+    "How many minutes can you hold your breath?",
+    "What’s the best number between 1 and 10?",
+    "How many alarms do you set in the morning?",
+    "How many times have you changed your mind today?",
+    "How many roommates is too many?",
+    "What’s the ideal group size for a hangout?",
+    "How many times do you re-read your texts before sending?",
+    "How many items are in your Amazon cart right now?",
+    "How many siblings is ideal?",
+    "What’s your personal chaos level (1–10)?",
+    "How many times do you laugh in a day?",
+    "How many pushups can you do?"
+  ],
+  "percentages": [
+    "What percent chance would you survive a horror movie?",
+    "What percent of your life is chaos?",
+    "What percent of your personality is caffeine?",
+    "What percent confident are you in your last decision?",
+    "What percent of the time are you late?",
+    "What percent of your meals are takeout?",
+    "What percent of your day is spent online?",
+    "What percent chance would you win a fist fight with a goose?",
+    "What percent of your jokes land?",
+    "What percent do you believe in ghosts?",
+    "What percent of your closet do you actually wear?",
+    "What percent of your life is planned out?",
+    "What percent of your personality is memes?",
+    "What percent chance would you date your celebrity crush?",
+    "What percent of your friends do you trust with a secret?",
+    "What percent of your thoughts are useless?",
+    "What percent of your weekends are productive?",
+    "What percent of your texts are left on read?",
+    "What percent of the time are you the funniest in the room?",
+    "What percent of your playlist is sad songs?",
+    "What percent of your dreams do you remember?",
+    "What percent chance would you win a trivia contest?",
+    "What percent of your screen time is social media?",
+    "What percent chance would you survive in the wild?",
+    "What percent chance are you the imposter?",
+    "What percent of your jokes are sarcastic?",
+    "What percent of your energy is faking confidence?",
+    "What percent of your thoughts are food-related?",
+    "What percent chance would you quit everything to travel?",
+    "What percent of the time do you feel like an adult?"
+  ],
+  "sports": [
+    "What sport would you be world champion in?",
+    "What sport is most likely to injure you?",
+    "What sport would you eliminate forever?",
+    "What sport has the coolest uniforms?",
+    "What sport should be played on Mars?",
+    "What sport do you secretly enjoy watching?",
+    "What sport would your friend group dominate?",
+    "What sport best matches your personality?",
+    "What sport would you compete in at the Olympics?",
+    "What sport would you be terrible at?",
+    "What sport should be more popular?",
+    "What sport would you play in a zombie apocalypse?",
+    "What sport is the most chaotic?",
+    "What sport should become a video game?",
+    "What sport would your dog be great at?",
+    "What sport do you wish you were good at?",
+    "What sport would be improved with swords?",
+    "What sport would you play in an alternate universe?",
+    "What sport is most dramatic?",
+    "What sport is underrated?",
+    "What sport would you want to ref?",
+    "What sport would you dominate with one week of training?",
+    "What sport has the worst fans?",
+    "What sport is best for people with no coordination?",
+    "What sport would make the best movie?",
+    "What sport should replace gym class?",
+    "What sport would you watch if it had slow motion commentary?",
+    "What sport would you challenge your crush to?",
+    "What sport do you only pretend to understand?",
+    "What sport is the most beautiful to watch?"
+  ],
+  "food": [
+    "What food could you eat every day?",
+    "What food do you irrationally hate?",
+    "What’s your comfort food?",
+    "What food should be banned?",
+    "What food is the most romantic?",
+    "What food screams “I give up”?",
+    "What food best represents your energy?",
+    "What food would you fight someone over?",
+    "What food do you never admit you like?",
+    "What food is your guilty pleasure?",
+    "What food is the most overrated?",
+    "What food would you serve to aliens?",
+    "What food do you crave at midnight?",
+    "What food do you eat when sad?",
+    "What food do you wish you could cook well?",
+    "What food would make a terrible ice cream flavor?",
+    "What food is your biggest weakness?",
+    "What food brings back childhood memories?",
+    "What food is your personal ick?",
+    "What food makes you feel fancy?",
+    "What food should not be allowed at parties?",
+    "What food always looks better than it tastes?",
+    "What food would win in a street fight?",
+    "What food do you eat the weirdest way?",
+    "What food is the most dramatic?",
+    "What food do you always share?",
+    "What food do you hoard for yourself?",
+    "What food is your go-to when sick?",
+    "What food would you name your pet after?",
+    "What food would make the worst perfume?"
+  ]
+};
         
         // DOM elements
         const setupSection = document.getElementById("setup-section");
         const gameSection = document.getElementById("game-section");
+        const answersSection = document.getElementById("answers-section");
         const playerCountInput = document.getElementById("player-count");
         const imposterCountInput = document.getElementById("imposter-count");
         const wordCategorySelect = document.getElementById("word-category");
@@ -187,17 +474,12 @@
         const resetGameBtn = document.getElementById("reset-game");
         const tapInstruction = document.getElementById("tap-instruction");
         const gameStatus = document.getElementById("game-status");
-        
-        // Game state
-        let playerCount = 4;
-        let imposterCount = 1;
-        let currentPlayer = 1;
-        let words = [];
-        let imposterIndex = -1;
-        let regularWord = "";
-        let imposterWord = "";
-        let gameInProgress = false;
-        let imposterIndexs = []
+        const playerAnswerInput = document.getElementById("player-answer-input");
+        const answerInput = document.getElementById("answer-input");
+        const submitAnswerBtn = document.getElementById("submit-answer");
+        const showAnswersBtn = document.getElementById("show-answers");
+        const answersContainer = document.getElementById("answers-container");
+        const backToGameBtn = document.getElementById("back-to-game");
         
         // DOM elements for file upload
         const fileUploadSection = document.getElementById("file-upload-section");
@@ -206,6 +488,17 @@
         
         // Variable to store words from file
         let wordsFromFile = [];
+        
+        // Game state
+        let playerCount = 4;
+        let imposterCount = 1;
+        let currentPlayer = 1;
+        let words = [];
+        let regularWord = "";
+        let imposterWord = "";
+        let gameInProgress = false;
+        let imposterIndexes = [];
+        let playerAnswers = {};
         
         // Event listeners
         wordCategorySelect.addEventListener("change", function() {
@@ -250,8 +543,9 @@
         
         startGameBtn.addEventListener("click", startGame);
         showWordBtn.addEventListener("click", showWord);
-        nextPlayerBtn.addEventListener("click", nextPlayer);
         resetGameBtn.addEventListener("click", resetGame);
+        submitAnswerBtn.addEventListener("click", submitAnswer);
+        backToGameBtn.addEventListener("click", backToGame);
         
         // Game functions
         function startGame() {
@@ -262,7 +556,7 @@
                 alert("You need at least 3 players to play!");
                 return;
             }
-            if (playerCount < 5 && imposterCount > 1) {
+            if (playerCount < 6 && imposterCount > 1) {
                 alert("You need at least 6 players to have multiple imposters!");
                 return;
             } else if (imposterCount > playerCount) {
@@ -294,29 +588,36 @@
                 wordPool = wordLists[category];
             }
             
-            // Select random words
-            const randomIndex = Math.floor(Math.random() * wordPool.length);
-            regularWord = wordPool[randomIndex];
+            // Select two different random words - one for regular players, one for imposters
+            let regularWordIndex = Math.floor(Math.random() * wordPool.length);
+            regularWord = wordPool[regularWordIndex];
             
-            // Set "IMPOSTER" as the word for the imposter
-            while (imposterWord != regularWord) {
-                let rand1 = Mat.floor(Math.random() * wordPool.length);
-                imposterWord = wordPool[rand1];
-            }
-            // imposterWord = "IMPOSTER";
+            // Get a different word for the imposter
+            let imposterWordIndex;
+            do {
+                imposterWordIndex = Math.floor(Math.random() * wordPool.length);
+            } while (imposterWordIndex === regularWordIndex);
+            imposterWord = wordPool[imposterWordIndex];
             
+            // Reset imposter indexes
+            imposterIndexes = [];
+            
+            // Select random players to be imposters
             if (imposterCount > 1) {
-                while (imposterIndexs.length < imposterCount) {
+                while (imposterIndexes.length < imposterCount) {
                     let rand = Math.floor(Math.random() * playerCount) + 1; 
 
-                    if (!imposterIndexs.includes(rand)) {
-                        imposterIndexs.push(rand);
+                    if (!imposterIndexes.includes(rand)) {
+                        imposterIndexes.push(rand);
                     }
                 }
             } else {
-                imposterIndexs.push(Math.floor(Math.random() * playerCount) + 1);
+                imposterIndexes.push(Math.floor(Math.random() * playerCount) + 1);
             }
-            // console.log("Imposter Players: ", imposterIndexs);
+            
+            // Reset player answers
+            playerAnswers = {};
+            
             // Reset to first player
             currentPlayer = 1;
             currentPlayerSpan.textContent = currentPlayer;
@@ -324,64 +625,116 @@
             // Hide setup, show game
             setupSection.style.display = "none";
             gameSection.style.display = "block";
+            answersSection.style.display = "none";
             
             // Reset word display
             wordDisplay.style.display = "none";
             showWordBtn.style.display = "block";
             tapInstruction.style.display = "block";
+            playerAnswerInput.style.display = "none";
+            showAnswersBtn.style.display = "none";
             
             gameInProgress = true;
-            gameStatus.textContent = `Game started with ${playerCount} players. One is the imposter!`;
+            gameStatus.textContent = `Game started with ${playerCount} players. ${imposterCount} player${imposterCount > 1 ? 's are' : ' is'} the imposter!`;
             
             nextPlayerBtn.disabled = true;
         }
 
         function showWord() {
-            const isImposter = imposterIndexs.includes(currentPlayer);
+            const isImposter = imposterIndexes.includes(currentPlayer);
             const word = isImposter ? imposterWord : regularWord;
             wordDisplay.textContent = word;
             wordDisplay.className = 'word-display' + (isImposter ? ' imposter-word' : '');
             wordDisplay.style.display = "block";
             showWordBtn.style.display = "none";
             tapInstruction.style.display = "none";
-            nextPlayerBtn.disabled = false;
+            
+            // Show answer input after seeing the word
+            playerAnswerInput.style.display = "block";
+            answerInput.focus();
+            nextPlayerBtn.disabled = true;
         }
         
-        // function showWord() {
-        //     const word = imposterIndexs.includes(currentPlayer) ? imposterWord : regularWord;
-        //     wordDisplay.textContent = word;
-        //     wordDisplay.style.display = "block";
-        //     showWordBtn.style.display = "none";
-        //     tapInstruction.style.display = "none";
+        function submitAnswer() {
+            if (!answerInput.value.trim()) {
+                alert("Please enter a word/clue!");
+                return;
+            }
             
-        //     nextPlayerBtn.disabled = false;
-        // }
+            // Save the player's answer
+            playerAnswers[currentPlayer] = answerInput.value.trim();
+            
+            // Hide answer input
+            playerAnswerInput.style.display = "none";
+            
+            // Automatically advance to next player
+            if (currentPlayer < playerCount) {
+                // If not the last player, go to next player automatically
+                nextPlayer();
+            } else {
+                // If last player, show all answers automatically
+                showAllAnswers();
+            }
+        }
         
         function nextPlayer() {
             currentPlayer++;
+            
+            if (currentPlayer > playerCount) {
+                // All players have seen their words and submitted answers
+                gameStatus.textContent = "Everyone has seen their word and submitted answers!";
+                showAllAnswers();
+                return;
+            }
             
             currentPlayerSpan.textContent = currentPlayer;
             wordDisplay.style.display = "none";
             showWordBtn.style.display = "block";
             tapInstruction.style.display = "block";
+            playerAnswerInput.style.display = "none";
             
-            nextPlayerBtn.disabled = true;
-
-            if (currentPlayer >= playerCount) {
-                // All players have seen their words
-                gameStatus.textContent = "Everyone has seen their word. Begin discussion!";
-                nextPlayerBtn.disabled = true;
-                nextPlayerBtn.style.display = 'none';
-                return;
-            } else {nextPlayerBtn.style.display = 'block';}
+            // Reset answer input
+            answerInput.value = "";
+        }
+        
+        function showAllAnswers() {
+            // Display all player answers
+            answersContainer.innerHTML = "";
+            
+            for (let player = 1; player <= playerCount; player++) {
+                const isImposter = imposterIndexes.includes(player);
+                const answer = playerAnswers[player] || "No answer submitted";
+                
+                const answerDiv = document.createElement("div");
+                answerDiv.className = "player-answer";
+                answerDiv.innerHTML = `
+                    <strong>Player ${player} : ${answer}
+                `;
+                answersContainer.appendChild(answerDiv);
+            }
+            
+            // Show answer section
+            gameSection.style.display = "none";
+            answersSection.style.display = "block";
+        }
+        
+        function backToGame() {
+            // Go back to game section
+            answersSection.style.display = "none";
+            gameSection.style.display = "block";
         }
         
         function resetGame() {
             setupSection.style.display = "block";
             gameSection.style.display = "none";
+            answersSection.style.display = "none";
             nextPlayerBtn.style.display = 'block';
-            imposterIndexs = [];
+            imposterIndexes = [];
+            playerAnswers = {};
             gameInProgress = false;
+            
+            // Show all answers with imposters revealed
+            showAllAnswers();
         }
     </script>
 </body>
