@@ -76,9 +76,14 @@
                 display: none;
             }
             .imposter-word {
-                color: #ff2e2e;
-                text-shadow: 0 0 10px red;
-                animation: flicker 1s infinite;
+                text-align: center;
+                font-size: 2em;
+                font-weight: bold;
+                margin: 20px 0;
+                display: none;
+                /* color: #ffffff; */
+                /* text-shadow: 0 0 10px rgb(255, 255, 255); */
+                /* animation: flicker 1s infinite; */
             }
             @keyframes flicker {
                 0% { opacity: 1; }
@@ -179,7 +184,7 @@
         <p class="instruction" id="tap-instruction">Tap to see your word. Don't show others!</p>
         
         <div class="player-answer-input" id="player-answer-input">
-            <label for="answer-input">Enter a related word/clue (don't be too obvious):</label>
+            <label for="answer-input">Answer the question here:</label>
             <input type="text" id="answer-input" placeholder="Enter your clue here">
             <button id="submit-answer" class="next-player-btn">Submit Answer</button>
         </div>
@@ -190,6 +195,7 @@
     
     <div class="container answers-section" id="answers-section">
         <h2 style="text-align: center;">All Player Answers</h2>
+        <h3 style="text-align: center;" id="normal-question"></h3>
         <div class="answers-container" id="answers-container">
             <!-- Player answers will go here -->
         </div>
@@ -479,6 +485,8 @@
         const submitAnswerBtn = document.getElementById("submit-answer");
         const showAnswersBtn = document.getElementById("show-answers");
         const answersContainer = document.getElementById("answers-container");
+        const normalQuestion = document.getElementById("normal-question");
+        // const imposterQuestion = document.getElementById("imposter-question");
         const backToGameBtn = document.getElementById("back-to-game");
         
         // DOM elements for file upload
@@ -700,6 +708,8 @@
         function showAllAnswers() {
             // Display all player answers
             answersContainer.innerHTML = "";
+            normalQuestion.textContent = regularWord;
+            normalQuestion.className = 'normal-question'
             
             for (let player = 1; player <= playerCount; player++) {
                 const isImposter = imposterIndexes.includes(player);
@@ -722,6 +732,7 @@
             // Go back to game section
             answersSection.style.display = "none";
             gameSection.style.display = "block";
+            console.log("Imposer Question: ", imposterWord)
         }
         
         function resetGame() {
