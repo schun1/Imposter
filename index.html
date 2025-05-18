@@ -196,10 +196,12 @@
     <div class="container answers-section" id="answers-section">
         <h2 style="text-align: center;">All Player Answers</h2>
         <h3 style="text-align: center;" id="normal-question"></h3>
+        <h3 style="text-align: center; color: #ff4655; display: none;" id="imposter-question"></h3>
         <div class="answers-container" id="answers-container">
             <!-- Player answers will go here -->
         </div>
-        <button id="back-to-game" class="next-player-btn">Back to Game</button>
+        <button id="show-imposter-question" class="next-player-btn">Show Imposter Question</button>
+        <button id="reset-game" class="reset-btn">Reset Game</button>
     </div>
     
     <script>
@@ -476,7 +478,7 @@
         const showWordBtn = document.getElementById("show-word");
         const wordDisplay = document.getElementById("word-display");
         const currentPlayerSpan = document.getElementById("current-player");
-        const nextPlayerBtn = document.getElementById("next-player");
+        // const nextPlayerBtn = document.getElementById("next-player");
         const resetGameBtn = document.getElementById("reset-game");
         const tapInstruction = document.getElementById("tap-instruction");
         const gameStatus = document.getElementById("game-status");
@@ -489,7 +491,7 @@
         // const imposterQuestion = document.getElementById("imposter-question");
         const backToGameBtn = document.getElementById("back-to-game");
         
-        // DOM elements for file upload
+        // DOM elements for file upload`
         const fileUploadSection = document.getElementById("file-upload-section");
         const wordFileInput = document.getElementById("word-file");
         const fileStatus = document.getElementById("file-status");
@@ -551,9 +553,9 @@
         
         startGameBtn.addEventListener("click", startGame);
         showWordBtn.addEventListener("click", showWord);
-        resetGameBtn.addEventListener("click", resetGame);
+        // resetGameBtn.addEventListener("click", resetGame);
         submitAnswerBtn.addEventListener("click", submitAnswer);
-        backToGameBtn.addEventListener("click", backToGame);
+        document.getElementById("show-imposter-question").addEventListener("click", showImposterQuestion);
         
         // Game functions
         function startGame() {
@@ -660,7 +662,7 @@
             // Show answer input after seeing the word
             playerAnswerInput.style.display = "block";
             answerInput.focus();
-            nextPlayerBtn.disabled = true;
+            // nextPlayerBtn.disabled = true;
         }
         
         function submitAnswer() {
@@ -715,38 +717,57 @@
                 const isImposter = imposterIndexes.includes(player);
                 const answer = playerAnswers[player] || "No answer submitted";
                 
-                const answerDiv = document.createElement("div");
-                answerDiv.className = "player-answer";
-                answerDiv.innerHTML = `
-                    <strong>Player ${player} : ${answer}
-                `;
-                answersContainer.appendChild(answerDiv);
+                const answerButton = document.createElement("button");
+                answerButton.className = "player-answer";
+                answerButton.textContent = `Player ${player}: ${answer}`;
+                answerButton.style.width = '100%';
+                answerButton.style.marginBottom = '10px';
+                answerButton.onclick = () => {
+                    if (isImposter) {
+                        answerButton.style.backgroundColor = '#00c896'; // Green for correct guess
+                    } else {
+                        answerButton.style.backgroundColor = '#cd3636'; // Red for wrong guess
+                    }
+                };
+                answersContainer.appendChild(answerButton);
             }
             
             // Show answer section
             gameSection.style.display = "none";
             answersSection.style.display = "block";
+            // Rebind reset button and show imposter question
+            document.getElementById("reset-game").addEventListener("click", resetGame);
+            document.getElementById("show-imposter-question").addEventListener("click", showImposterQuestion);
+            // document.getElementById("imposter-question").style.display = "none";
         }
         
-        function backToGame() {
-            // Go back to game section
-            answersSection.style.display = "none";
-            gameSection.style.display = "block";
-            console.log("Imposer Question: ", imposterWord)
+        function showImposterQuestion() {
+            const imposterQuestionEl = document.getElementById("imposter-question");
+            imposterQuestionEl.textContent = "Imposter Question: " + imposterWord;
+            imposterQuestionEl.style.display = "block";
         }
         
         function resetGame() {
             setupSection.style.display = "block";
             gameSection.style.display = "none";
             answersSection.style.display = "none";
-            nextPlayerBtn.style.display = 'block';
+            document.getElementById("imposter-question").style.display = "none";
+            
             imposterIndexes = [];
             playerAnswers = {};
             gameInProgress = false;
             
-            // Show all answers with imposters revealed
-            showAllAnswers();
+            wordDisplay.textContent = "";
+            wordDisplay.style.display = "none";
+            showWordBtn.style.display = "block";
+            tapInstruction.style.display = "block";
+            playerAnswerInput.style.display = "none";
+            gameStatus.textContent = "";
         }
+
+        document.querySelectorAll("#reset-game").forEach(btn => {
+            btn.addEventListener("click", resetGame);
+        });
     </script>
 </body>
 </html>
